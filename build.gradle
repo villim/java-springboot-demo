@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.15'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id "org.ajoberstar.grgit" version "4.1.1"
+}
+
+group = 'io.github.villim'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    compileOnly("org.projectlombok:lombok:1.18.24")
+    annotationProcessor("org.projectlombok:lombok:1.18.24")
+    testCompileOnly("org.projectlombok:lombok:1.18.24") // use lombok in src/main/test
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.24") // use lombok in src/main/test
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+jar {
+    enabled = false
+}
+
+ext {
+    // Open the Git repository in the current directory.
+    git = org.ajoberstar.grgit.Grgit.open(currentDir: project.rootDir)
+    // Get commit id of HEAD.
+    gitRevision = git.head().id
+    // Alternative is using abbreviatedId of head() method.
+    gitAbbRevision = git.head().abbreviatedId
+}
+
+def moduleVersion = "${project.version}"
+version = "${project.version}-${gitAbbRevision}" // change default project version with revision number
+
+
+task getVersions(dependsOn: processResources) {
+    doLast {
+        def separator = System.getProperty('line.separator')
+        def version = project.version.toString()
+        boolean success = new File("$buildDir/resources/main/version.properties").delete()
+        def file = new File("$buildDir/resources/main/version.properties")
+        //file.write("project.version=${version}$separator")
+        file << "project.version=${moduleVersion}$separator"
+        file << "git.version=${gitRevision}$separator"
+        file << "git.abbreviated.version=${gitAbbRevision}$separator"
+    }
+}
+
+classes {
+    dependsOn getVersions
+}
+
+

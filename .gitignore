@@ -1,0 +1,14 @@
+.idea
+*.iml
+.pmd
+.gradle
+.springBeans
+.DS_Store
+.project
+.classpath
+.settings
+.tern-project
+target
+bin
+build
+out
